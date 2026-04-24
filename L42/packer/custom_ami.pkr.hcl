@@ -12,7 +12,7 @@ packer {
 }
 
 source "amazon-ebs" "ubuntu" {
-  ami_name = "dos-31-custom-ubuntu"
+  ami_name = "emyakota-custom-ubuntu"
   instance_type = "t3.micro"
   region = "us-east-2"
   ssh_pty = true

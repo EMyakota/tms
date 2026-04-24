@@ -1,3 +1,0 @@
-ci_access:
-  projects:
-    - id: devops201206/metrics_app_chart

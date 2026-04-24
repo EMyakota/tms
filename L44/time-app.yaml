@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: anestesia01/k8s-demo:time-app-2.0.0
+        image: nginx:stable-alpine
           ports:
             - containerPort: 8000
 ---

@@ -1,9 +1,9 @@
 resource "aws_s3_bucket" "test-bucket" {
-  bucket = "testing-1771352896"
+  bucket = "emyakota-lesson-38-demo-bucket"
 }
 
 resource "aws_s3_bucket" "tfstates-bucket" {
-  bucket = "dos-31-tfstate-1771351893"
+  bucket = "emyakota-lesson-38-tfstate-bucket"
 }
 
 resource "aws_dynamodb_table" "state_lock_table" {

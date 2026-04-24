@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "dos-31-tfstate-1771351893"   # заранее созданный бакет
+    bucket         = "emyakota-workspaces-tfstate"
     key            = "24-02/terraform.tfstate"
     region         = "us-east-2"
   }
@@ -22,7 +22,7 @@ provider "aws" {
 locals {
   ws = terraform.workspace
   env = local.ws == "default" ? "dev" : local.ws
-  bucket_name = "24-02-${local.env}-bucket"
+  bucket_name = "emyakota-${local.env}-bucket"
 }
 
 resource "aws_s3_bucket" "this" {

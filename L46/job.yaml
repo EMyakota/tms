@@ -8,8 +8,8 @@ spec:
     spec:
       containers:
       - name: migrate
-        image: anestesia01/k8s-demo:k8s-demo-job_2.0
-        command: ["python", "migrate.py"]
+        image: python:3.11-alpine
+        command: ["python", "-c", "print('db migration demo job completed')"]
         env:
         - name: DATABASE_URL
           value: "postgresql://postgres:password@postgres-service:5432/postgres"

@@ -2,8 +2,8 @@ namespace: metrics-app
 app:
   replicaCount: 2
   image:
-    repository: anestesia01/k8s-demo
-    tag: metrics-2.0
+    repository: nginx
+    tag: stable-alpine
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP

@@ -1,5 +1,5 @@
 ---
-# tasks file for /home/anestesia/bookstore-infra/ansible/roles/setup-backend
+# tasks for backend role
 - name: Create dir
   file:
     path: "{{ prj_dir }}"
@@ -7,7 +7,7 @@
 
 - name: Clone repo
   git:
-    repo: https://gitlab.com/anestesia.loc/bookstore.git
+    repo: https://github.com/EMyakota/tms.git
     dest: "{{ prj_dir }}"
     clone: yes
     update: yes

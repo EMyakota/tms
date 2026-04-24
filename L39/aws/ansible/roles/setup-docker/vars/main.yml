@@ -1,5 +1,5 @@
 ---
-# vars file for /home/anestesia/bookstore-infra/ansible/roles/setup-docker
+# vars for docker role
 packages:
   - git
   - gnupg2

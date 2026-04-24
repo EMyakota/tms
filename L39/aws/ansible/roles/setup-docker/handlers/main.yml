@@ -1,5 +1,5 @@
 ---
-# handlers file for /home/anestesia/bookstore-infra/ansible/roles/setup-docker
+# handlers for docker role
 - name: restart docker
   systemd:
     name: docker

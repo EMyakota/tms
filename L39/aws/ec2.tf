@@ -44,7 +44,7 @@ resource "aws_instance" "target_1" {
 
   tags = {
     Name = "target-host-1"
-    Team = "dos-31"
+    Team = "tms"
     Kind = "permanent"
   }
 

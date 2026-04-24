@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: greet
-        image: anestesia01/k8s-demo:greet-app-2.0.0
+        image: python:3.11-alpine
+        command: ["sh", "-c", "python -m http.server 8000"]
         env:
         - name: GREETING
           valueFrom:

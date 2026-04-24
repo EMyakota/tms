@@ -1,5 +1,5 @@
 ---
-# vars file for /home/anestesia/bookstore-infra/ansible/roles/setup-postgres
+# vars for postgres role
 db_user: user
 db_pass: password
 db_name: bookstore

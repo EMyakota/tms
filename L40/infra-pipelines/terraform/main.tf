@@ -7,7 +7,7 @@ terraform {
   }
   required_version = ">= 1.2"
   backend "s3" {
-    bucket = "dos-31-tfstate-1771351893"
+    bucket = "emyakota-infra-pipeline-tfstate"
     key    = "cicd/terraform.tfstate"
     region = "us-east-2"
   }

@@ -14,7 +14,8 @@ spec:
         spec:
           containers:
           - name: pg-backup
-            image: anestesia01/k8s-demo:k8s-demo-job_backuper-1.0
+            image: alpine:3.20
+            command: ["sh", "-c", "date > /backup/last-backup.txt"]
             env:
               - name: PG_HOST
                 value: "postgres-service"

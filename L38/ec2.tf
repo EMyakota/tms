@@ -34,7 +34,7 @@ resource "aws_instance" "app_server" {
 
   tags = {
     Name = "tf-server-1"
-    Team = "dos-31"
+    Team = "tms"
     Kind = "temporary"
   }
 }
