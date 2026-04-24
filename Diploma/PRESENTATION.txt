@@ -1,0 +1,22 @@
+Short presentation.
+
+This diploma project is a DevOps wrapper around a public Go application.
+The original app was turned into a small service with health checks, metrics, containerized deployment, CI/CD and monitoring.
+
+What was done:
+
+- the public source app was copied and extended
+- Docker and docker-compose were added
+- Prometheus and Grafana were configured
+- GitHub Actions pipeline was added
+- Terraform bootstrap was added
+
+What can be shown during the demo:
+
+- the repository structure
+- local startup
+- application endpoints
+- metrics in Prometheus
+- dashboard in Grafana
+- CI/CD workflow file
+

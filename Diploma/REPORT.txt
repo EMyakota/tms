@@ -1,0 +1,36 @@
+Коротко о том, что сделано в дипломе.
+
+1. Взято публичное приложение.
+Базой стал открытый репозиторий с простым Go-сервисом.
+
+2. Доработано приложение.
+Добавлены обычный endpoint, endpoint hello, healthcheck, readiness check и Prometheus metrics.
+
+3. Добавлена контейнеризация.
+Есть Dockerfile и docker-compose для локального запуска.
+
+4. Добавлен мониторинг.
+Подключены Prometheus и Grafana.
+Grafana уже настроена на Prometheus.
+
+5. Добавлен CI/CD.
+Есть GitHub Actions workflow с проверками, тестами, сборкой, публикацией образа и шагом deploy.
+
+6. Добавлен Terraform.
+Есть простой IaC-слой для автоматизированного запуска инфраструктуры.
+
+Что я проверил локально:
+
+- go mod tidy
+- go test ./...
+- go build
+- docker compose config
+- запуск приложения
+- ответы по HTTP
+- сбор метрик в Prometheus
+- datasource и dashboard в Grafana
+
+Что зависит от внешней среды:
+
+Полноценный deploy требует GitHub secrets и отдельный сервер.
+
