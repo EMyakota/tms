@@ -78,6 +78,79 @@
       ],
       "title": "Total requests",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{id=~\"/docker/.+\",cpu=\"total\"}[1m])) by (id)",
+          "legendFormat": "{{id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(container_memory_usage_bytes{id=~\"/docker/.+\"}) by (id)",
+          "legendFormat": "{{id}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Container memory usage",
+      "type": "timeseries"
     }
   ],
   "refresh": "10s",
@@ -92,6 +165,5 @@
     "to": "now"
   },
   "title": "Diploma Overview",
-  "version": 1
+  "version": 2
 }
-

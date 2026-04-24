@@ -34,6 +34,20 @@ services:
     networks:
       - diploma-net
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: diploma-cadvisor
+    privileged: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks:
+      - diploma-net
+
   grafana:
     image: grafana/grafana:11.2.0
     container_name: diploma-grafana
@@ -47,6 +61,7 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+      - cadvisor
     networks:
       - diploma-net
 

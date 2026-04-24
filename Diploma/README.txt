@@ -15,7 +15,7 @@ Dockerfile
 Сборка контейнера.
 
 docker-compose.yml
-Локальный запуск приложения, Prometheus и Grafana одной командой.
+Локальный запуск приложения, Prometheus, Grafana и контейнерного мониторинга одной командой.
 
 infra\\terraform
 Простой Terraform-слой для автоматизированного старта инфраструктуры.
@@ -24,7 +24,7 @@ infra\\terraform
 CI/CD через GitHub Actions.
 
 monitoring
-Конфиги Prometheus и Grafana.
+Конфиги Prometheus и Grafana, плюс dashboard для приложения и контейнеров.
 
 scripts\\bootstrap.ps1
 Быстрый запуск проекта.
@@ -54,6 +54,9 @@ http://localhost:8080/metrics
 Prometheus:
 http://localhost:9090
 
+Контейнерные метрики:
+http://localhost:8081/metrics
+
 Grafana:
 http://localhost:3000
 
@@ -63,8 +66,13 @@ admin
 
 Что делает CI/CD:
 
-При push запускаются проверки, тесты, сборка и публикация образа.
+При push запускаются линтер, проверки форматирования, тесты, сборка бинаря, сборка Docker-образа, smoke test собранного контейнера и публикация артефактов.
 Для основной ветки предусмотрен deploy и уведомление в Telegram, если заданы секреты GitHub.
+
+Что дает мониторинг:
+
+Prometheus собирает метрики приложения и контейнеров.
+Grafana показывает запросы к приложению и использование ресурсов контейнерами.
 
 Какие секреты нужны для deploy:
 
@@ -73,4 +81,3 @@ DEPLOY_USER
 DEPLOY_SSH_KEY
 TELEGRAM_BOT_TOKEN
 TELEGRAM_CHAT_ID
-
