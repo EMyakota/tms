@@ -1,0 +1,4 @@
+subnet_id         = "subnet-xxxxxxxx"
+existing_key_name = "my-keypair"
+public_key_path   = "~/.ssh/id_ed25519.pub"
+
