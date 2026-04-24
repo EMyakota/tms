@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_IMAGE:-ghcr.io/emyakota/diploma-service:latest}
+    container_name: diploma-app
+    environment:
+      APP_NAME: tms-diploma-service
+      APP_VERSION: local
+      APP_ENV: docker
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - diploma-net
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: diploma-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+    networks:
+      - diploma-net
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: diploma-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - diploma-net
+
+networks:
+  diploma-net:
+    driver: bridge
