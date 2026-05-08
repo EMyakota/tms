@@ -3,10 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ${APP_IMAGE:-ghcr.io/emyakota/diploma-service:latest}
+    image: ${APP_IMAGE:-ghcr.io/emyakota/example_diploma-service:latest}
     container_name: diploma-app
     environment:
-      APP_NAME: tms-diploma-service
+      APP_NAME: tms-diplom-service
       APP_VERSION: local
       APP_ENV: docker
       PORT: 8080
@@ -18,11 +18,11 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - diploma-net
+      - diplom-net
 
   prometheus:
     image: prom/prometheus:v2.54.1
-    container_name: diploma-prometheus
+    container_name: diplom-prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
     volumes:
@@ -32,11 +32,11 @@ services:
     depends_on:
       - app
     networks:
-      - diploma-net
+      - diplom-net
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
-    container_name: diploma-cadvisor
+    container_name: diplom-cadvisor
     privileged: true
     ports:
       - "8081:8080"
@@ -46,7 +46,7 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
     networks:
-      - diploma-net
+      - diplom-net
 
   grafana:
     image: grafana/grafana:11.2.0
@@ -63,8 +63,8 @@ services:
       - prometheus
       - cadvisor
     networks:
-      - diploma-net
+      - diplom-net
 
 networks:
-  diploma-net:
+  diplom-net:
     driver: bridge
