@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    image: ${BACKEND_IMAGE:-diplom-backend:latest}
     container_name: backend
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -10,10 +11,17 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     networks:
-      - diplom 
+      - diplom
 
   frontend:
     build: ./frontend
@@ -25,7 +33,7 @@ services:
     depends_on:
       - backend
     networks:
-      - diplom 
+      - diplom
 
   db:
     image: postgres:15
@@ -38,16 +46,26 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - diplom 
+      - diplom
 
   redis:
     image: redis:7
     container_name: redis
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     networks:
-      - diplom 
+      - diplom
 
   celery:
     build: ./backend
@@ -56,10 +74,12 @@ services:
     env_file:
       - .env
     depends_on:
-      - backend
-      - redis
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
-      - diplom 
+      - diplom
 
   prometheus:
     image: prom/prometheus:v2.54.1
@@ -72,6 +92,20 @@ services:
       - "9090:9090"
     depends_on:
       - backend
+    networks:
+      - diplom
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: diplom-cadvisor
+    privileged: true
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
     networks:
       - diplom
 
@@ -88,12 +122,12 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+      - cadvisor
     networks:
       - diplom
 
 volumes:
   postgres_data:
-
 
 networks:
   diplom:
