@@ -1,0 +1,214 @@
+name: Diplom CI/CD
+
+# Когда запускать
+on:
+  push:
+    branches: [ "main", "master" ]  # Когда пушим в главную ветку
+  pull_request:
+    branches: [ "main", "master" ]  # Когда создаём PR в главную ветку
+
+# Переменные для всего пайплайна
+env:
+  # Куда будем пушить Docker-образы (GitHub Container Registry)
+  IMAGE_NAME_BACKEND: ghcr.io/${{ github.repository_owner }}/diplom-backend
+  IMAGE_NAME_FRONTEND: ghcr.io/${{ github.repository_owner }}/diplom-frontend
+
+# Задачи (jobs) - выполняются по очереди или параллельно
+jobs:
+
+  # ============================================
+  # ЗАДАЧА 1: ТЕСТЫ
+  # ============================================
+  test:
+    runs-on: ubuntu-latest  # Бежим на свежей Ubuntu
+    
+    # Поднимаем вспомогательные сервисы для тестов
+    services:
+      postgres:  # База данных
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432  # Открываем порт наружу
+        options: --health-cmd pg_isready --health-interval 10s  # Проверяем, что БД жива
+      
+      redis:  # Кеш и очереди
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping"  # Проверка Redis
+
+    # Все команды будем запускать в папке backend
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      # Скачиваем код из репозитория
+      - uses: actions/checkout@v4
+
+      # Ставим Python нужной версии
+      - name: Установка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Ставим зависимости из requirements.txt
+      - name: Установка зависимостей
+        run: pip install -r requirements.txt
+
+      # Проверяем стиль кода (flake8)
+      - name: Проверка стиля кода
+        run: |
+          pip install flake8
+          flake8 . --count --show-source --statistics
+
+      # Запускаем миграции и тесты Django
+      - name: Запуск тестов Django
+        env:  # Переменные окружения для тестовой БД
+          DB_NAME: test_db
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: just-for-testing  # Не настоящий ключ, он только для тестов
+          DEBUG: True
+        run: |
+          python manage.py migrate  # Создаём таблицы в тестовой БД
+          python manage.py test      # Запускаем тесты
+
+  # ============================================
+  # ЗАДАЧА 2: СБОРКА DOCKER-ОБРАЗОВ
+  # ============================================
+  build:
+    runs-on: ubuntu-latest
+    needs: test  # Ждём, пока тесты успешно пройдут
+    # Собираем только при пуше в главную ветку (не при PR)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    # Права: нужно читать код и писать в GitHub Packages
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Логинимся в GitHub Container Registry
+      - name: Вход в GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # Токен даёт GitHub автоматически
+
+      # Собираем и пушим бэкенд
+      - name: Сборка и отправка бэкенда
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend  # Где лежит Dockerfile
+          push: true  # Отправляем в registry
+          tags: |
+            ${{ env.IMAGE_NAME_BACKEND }}:latest
+            ${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }}
+
+      # Собираем и пушим фронтенд
+      - name: Сборка и отправка фронтенда
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME_FRONTEND }}:latest
+            ${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
+
+  # ============================================
+  # ЗАДАЧА 3: ДЕПЛОЙ НА СЕРВЕР
+  # ============================================
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build  # Ждём сборки образов
+    if: github.ref == 'refs/heads/main'  # Только для main ветки
+
+    steps:
+      # Заходим на сервер по SSH и выполняем команды
+      - name: Деплой через SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}      # IP сервера (секрет)
+          username: ${{ secrets.DEPLOY_USER }}   # Пользователь (секрет)
+          key: ${{ secrets.DEPLOY_SSH_KEY }}     # SSH-ключ (секрет)
+          script_stop: true  # Остановиться при любой ошибке
+          script: |
+            echo "Начинаем деплой"
+            
+            # Переходим в папку проекта
+            cd /opt/diplom-app
+            echo "Перешли в папку /opt/diplom-app"
+            
+            # Создаём файл с секретами для Django
+            cat > .env <<EOF
+            SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+            DEBUG=False
+            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            EOF
+            echo "Файл .env создан"
+            
+            # Подтягиваем новые образы
+            echo "Качаем новые Docker-образы"
+            docker compose pull
+            
+            # Перезапускаем контейнеры
+            echo "Перезапускаем контейнеры"
+            docker compose up -d
+            
+            # Чистим старые образы
+            echo "Удаляем старые образы"
+            docker image prune -f
+            
+            echo "Деплой завершён"
+
+  # ============================================
+  # ЗАДАЧА 4: ОТПРАВКА УВЕДОМЛЕНИЙ
+  # ============================================
+  notify:
+    runs-on: ubuntu-latest
+    needs: [test, build, deploy]  # Ждём все предыдущие задачи
+    if: always() && github.event_name == 'push'  # Всегда при пуше (даже если fail)
+    
+    steps:
+      # Проверяем, успешно ли всё прошло
+      - name: Проверка статуса
+        id: status
+        run: |
+          if [ "${{ needs.test.result }}" == "success" ] && \
+             [ "${{ needs.build.result }}" == "success" ] && \
+             [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "status=OK" >> $GITHUB_OUTPUT
+          else
+            echo "status=FAIL" >> $GITHUB_OUTPUT
+          fi
+
+      # Отправляем в Telegram (если настроены секреты)
+      - name: Уведомление в Telegram
+        if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            Diplom CI/CD: ${{ steps.status.outputs.status }}
+            
+            Репозиторий: ${{ github.repository }}
+            Ветка: ${{ github.ref_name }}
+            Коммит: ${{ github.sha }}
+            
+            Тесты: ${{ needs.test.result }}
+            Сборка: ${{ needs.build.result }}
+            Деплой: ${{ needs.deploy.result }}
+            
+            Ссылка: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
