@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: Diploma dashboards
+  - name: Diplom dashboards
     orgId: 1
-    folder: Diploma
+    folder: Diplom
     type: file
     disableDeletion: false
     options:

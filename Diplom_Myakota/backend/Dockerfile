@@ -1,11 +1,15 @@
-FROM golang:1.24-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go mod init notes
-RUN go mod tidy
-RUN go build -o server ./...
+FROM python:3.10-slim
 
-FROM alpine:3.20
 WORKDIR /app
-COPY --from=builder /app/server /app/server
-CMD ["/app/server"]
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

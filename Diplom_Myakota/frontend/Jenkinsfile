@@ -1,0 +1,59 @@
+pipeline {
+    agent any // { docker { image 'node:18-alpine' } }
+
+    environment {
+        NODE_ENV = 'production'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo 'Клонирование репозитория'
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                echo 'Установка npm зависимостей'
+                sh '''
+                  node -v
+                  npm -v
+                  npm install
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Сборка фронтенда'
+                sh '''
+                  npm run build
+                '''
+            }
+        }
+
+        stage('Test (optional)') {
+            when {
+                expression { fileExists('package.json') }
+            }
+            steps {
+                echo 'Запуск тестов'
+                sh '''
+                  npm test -- --watch=false || true
+                '''
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Фронтенд пайплайн успешно завершён'
+        }
+        failure {
+            echo 'Фронтенд пайплайн завершился ошибкой'
+        }
+    }
+}
