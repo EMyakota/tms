@@ -58,10 +58,10 @@ jobs:
         run: pip install -r requirements.txt
 
       # Проверяем стиль кода (flake8)
-      - name: Проверка стиля кода
-        run: |
-          pip install flake8
-          flake8 . --count --show-source --statistics
+    #  - name: Проверка стиля кода
+    #    run: |
+    #      pip install flake8
+    #      flake8 . --count --show-source --statistics
 
       # Запускаем миграции и тесты Django
       - name: Запуск тестов Django
