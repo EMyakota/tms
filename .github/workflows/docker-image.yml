@@ -193,9 +193,8 @@ jobs:
             echo "status=FAIL" >> $GITHUB_OUTPUT
           fi
 
-      # Отправляем в Telegram (если настроены секреты)
+      # Отправляем в Telegram 
       - name: Уведомление в Telegram
-        if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
