@@ -21,6 +21,9 @@ jobs:
   # ============================================
   test:
     runs-on: ubuntu-latest  # Бежим на свежей Ubuntu
+    defaults:
+      run:
+        working-directory: Diplom_Myakota/backend
     
     # Поднимаем вспомогательные сервисы для тестов
     services:
