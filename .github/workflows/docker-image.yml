@@ -43,11 +43,6 @@ jobs:
           - 6379:6379
         options: --health-cmd "redis-cli ping"  # Проверка Redis
 
-    # Все команды будем запускать в папке backend
-    defaults:
-      run:
-        working-directory: backend
-
     steps:
       # Скачиваем код из репозитория
       - uses: actions/checkout@v4
